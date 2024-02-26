@@ -1,77 +1,51 @@
 from interaction import InteractionManager, Interaction
 
-def is_substance(string: str):
-    for c in string:
-        if c not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ ,ÉÈÀÂÊÎÏÔÛÇ'.()":
-            return False
-    return True
-
-def is_interaction(string: str):
-    return string != "" and string[0] == "+"
-
-def is_number(string: str) -> bool:
-    for c in string.strip():
-        if c not in "1234567890":
-            return False
-    return True
 
 
-def cut_in_substances(string: str) -> list:
-    subs = []
-    lines = string.split("\n")
-    prev = 0
-    for i in range(len(lines)):
-        if is_substance(lines[i]):
-            subs.append("\n".join(lines[prev:i]))
-            prev = i
-    subs.append("\n".join(lines[prev:]))
-    return subs[1:]
+# medic = (29.280000686645508, 502.8668518066406, 87.56080627441406, 514.0391845703125, 'ZOPICLONE\n', 37, 0)
+# com = (36.720001220703125, 517.9428100585938, 285.3660583496094, 525.763427734375, 'Voir aussi : benzodiazépines et apparentés - hypnotiques - médicaments sédatifs\n', 38, 0)
+# interaction = (32.15999984741211, 531.0775146484375, 186.2428436279297, 540.1353759765625, '+ INHIBITEURS PUISSANTS DU CYP3A4\n', 39, 0)
+# com1 = (97.44000244140625, 543.9828491210938, 262.92352294921875, 551.803466796875, "Légère augmentation de l'effet sédatif de la zopiclone.\n", 42, 0)
+# contrainte = (317.2799987792969, 594.0228271484375, 383.0893249511719, 601.8434448242188, "Précaution d'emploi\n", 44, 0)
+# com2 = (317.2799987792969, 605.4228515625, 519.234375, 613.2434692382812, 'Surveillance clinique. Utiliser éventuellement un autre hypnotique.\n', 45, 0)
+def is_substance(block: tuple) -> bool:
+    return int(block[0]) == 29
 
-def get_interactions(lines: list) -> list:
-    inters = []
-    prev = 0
-    print(lines)
-    for i in range(1, len(lines)):
-        if is_interaction(lines[i]):
-            inters.append(lines[prev:i])
-            prev = i
-    inters.append(lines[prev:])
-    inters2 = []
-    for i in inters:
-        print(i)
-        subtance: str = i[0][1:]
-        contrainte: str = i[1]
-        com = ""
-        if "Association DECONSEILLEE" in contrainte and contrainte != "Association DECONSEILLEE":
-            contrainte = "Association DECONSEILLEE"
-            com += i[1][len(contrainte):]
-        elif "Précaution d'emploi" in contrainte and contrainte != "Précaution d'emploi":
-            contrainte = "Précaution d'emploi"
-            com += i[1][len(contrainte):]
-        elif "A prendre en compte" in contrainte and contrainte != "A prendre en compte":
-            contrainte = "A prendre en compte"
-            com += i[1][len(contrainte):]
-        elif "CONTRE-INDICATION" in contrainte and contrainte != "CONTRE-INDICATION":
-            contrainte = "CONTRE-INDICATION"
-            com += i[1][len(contrainte):]
-        com += "".join(i[2:])
-        inter = Interaction(subtance, contrainte, com)
-        inters2.append(inter)
+def is_com(block: tuple) -> bool:
+    return int(block[0]) == 36
 
-    return inters2
+def is_interaction(block: tuple) -> bool:
+    return int(block[0]) == 32
 
-def extract_infos(string: str) -> InteractionManager:
-    lines = string.split("\n")
-    substance = lines[0]
-    first_inter = 0
-    while not is_interaction(lines[first_inter]):
-        first_inter += 1
-    com = " ".join(lines[1:first_inter])
-    manager = InteractionManager(substance, com)
+def is_com1(block: tuple) -> bool:
+    return int(block[0]) == 97
 
-    print(substance)
+def is_com2(block: tuple) -> bool:
+    return int(block[0]) == 317
 
-    interactions = get_interactions(lines[first_inter:])
-    for i in interactions:
-        manager.add_interaction(i)
-    return manager
+def get_string(b: tuple[float, float, float, float, str, int, int]) -> str:
+    s = b[4]
+    if s[0] == "+":
+        s = s[1:]
+    s = s.replace("\n", " ")
+    s = s.replace("\"", "\'")
+    return s.strip() + " "
+
+def extract_infos(blocks: list[tuple[float, float, float, float, str, int, int]]) -> list[InteractionManager]:
+    list_im = [InteractionManager("")]
+    for b in blocks:
+        if is_substance(b):
+            list_im.append(InteractionManager(get_string(b)))
+        elif is_com(b):
+            list_im[-1].com += get_string(b)
+        elif is_interaction(b):
+            list_im[-1].add_interaction(Interaction(get_string(b), "", ""))
+        elif is_com1(b):
+            list_im[-1].interactions[-1].com1 += get_string(b)
+        elif is_com2(b):
+            list_im[-1].interactions[-1].com2 += get_string(b)
+        else:
+            print("string non-identifié (surement un arabe) : ")
+            print(b)
+
+    return list_im[1:]

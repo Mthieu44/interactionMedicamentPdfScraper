@@ -1,20 +1,20 @@
 class Interaction:
-    def __init__(self, substance: str, contrainte: str, com1: str) -> None:
+    def __init__(self, substance: str, com1: str, com2: str) -> None:
         self.substance = substance
-        self.contrainte = contrainte
         self.com1 = com1
+        self.com2 = com2
 
     def __str__(self) -> str:
-        return f"{self.substance} \n {self.contrainte} \n {self.com1}"
+        return f"{self.substance} \n {self.com1} \n {self.com2}"
     
     def to_json(self) -> str:
-        return f'{{"substance": "{self.substance}", "contrainte": "{self.contrainte}", "com1": "{self.com1}"}}'
+        return f'{{"substance": "{self.substance}", "com1": "{self.com1}", "com2": "{self.com2}"}}'
 
 class InteractionManager:
     def __init__(self, substance: str, com = "") -> None:
         self.subtance = substance
         self.com = com
-        self.interactions = []
+        self.interactions: list[Interaction] = []
 
     def add_interaction(self, interaction: Interaction) -> None:
         self.interactions.append(interaction)
