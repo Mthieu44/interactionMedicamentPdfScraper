@@ -24,7 +24,7 @@ class InteractionManager:
 
     def to_json(self) -> str:
         interactions = "[" + ", ".join([i.to_json() for i in self.interactions]) + "]"
-        return f'{{"subtance": "{self.subtance}", "com": "{self.com}", "interactions": {interactions}}}'
+        return f'{{"substance": "{self.subtance}", "com": "{self.com}", "interactions": {interactions}}}'
     
     def __str__(self) -> str:
         return f"{str(self.subtance)}\n{str(self.com)}\n {str(self.interactions)}"
