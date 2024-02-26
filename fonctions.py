@@ -29,7 +29,7 @@ def get_string(b: tuple[float, float, float, float, str, int, int]) -> str:
         s = s[1:]
     s = s.replace("\n", " ")
     s = s.replace("\"", "\'")
-    return s.strip() + " "
+    return s.strip()
 
 def extract_infos(blocks: list[tuple[float, float, float, float, str, int, int]]) -> list[InteractionManager]:
     list_im = [InteractionManager("")]
@@ -37,13 +37,13 @@ def extract_infos(blocks: list[tuple[float, float, float, float, str, int, int]]
         if is_substance(b):
             list_im.append(InteractionManager(get_string(b)))
         elif is_com(b):
-            list_im[-1].com += get_string(b)
+            list_im[-1].com += get_string(b) if list_im[-1].com == "" else " " + get_string(b)
         elif is_interaction(b):
             list_im[-1].add_interaction(Interaction(get_string(b), "", ""))
         elif is_com1(b):
-            list_im[-1].interactions[-1].com1 += get_string(b)
+            list_im[-1].interactions[-1].com1 += get_string(b) if list_im[-1].interactions[-1].com1 == "" else " " + get_string(b)
         elif is_com2(b):
-            list_im[-1].interactions[-1].com2 += get_string(b)
+            list_im[-1].interactions[-1].com2 += get_string(b) if list_im[-1].interactions[-1].com2 == "" else " " + get_string(b)
         else:
             print("string non-identifié (surement un arabe) : ")
             print(b)
